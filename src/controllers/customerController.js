@@ -180,7 +180,6 @@ const payBill = async (req, res) => {
     }
 };
 
-
 module.exports = {
     searchRentalVehicles,
     bookVehicle,

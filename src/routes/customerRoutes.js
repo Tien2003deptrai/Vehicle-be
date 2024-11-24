@@ -16,8 +16,8 @@ router.get('/vehicles/search', authenticate, searchRentalVehicles);
 router.post('/rental/book', authenticate, bookVehicle);
 router.post('/review', authenticate, rateAndReview);
 router.get('/notifications', authenticate, getNotifications);
-router.get('/bills', authenticate, viewTransactionHistory);
 router.post('/bills', authenticate, createBill);
 router.post('/bills/pay', authenticate, payBill);
+router.get('/bills', authenticate, viewTransactionHistory);
 
 module.exports = router;
