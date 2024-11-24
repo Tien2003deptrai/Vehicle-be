@@ -38,32 +38,43 @@ const getVehicleById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Lấy phương tiện dựa trên VehicleID
-        const vehicle = await Vehicle.findOne({ VehicleID: id }).populate('UserID', 'Name Email');
+        // Tìm phương tiện trong bảng Vehicle
+        const vehicle = await Vehicle.findOne({ VehicleID: id });
         if (!vehicle) {
             return res.status(404).json({ message: "Không tìm thấy phương tiện" });
         }
 
-        // Lấy thông tin chi tiết của phương tiện
+        // Lấy thông tin chi tiết dựa trên Category
         let details = null;
-        if (vehicle.Category === 'CAR') {
+        if (vehicle.Category === "CAR") {
             details = await Car.findOne({ VehicleID: id });
-        } else if (vehicle.Category === 'MOTOR') {
+            if (!details) {
+                return res
+                    .status(404)
+                    .json({ message: "Không tìm thấy thông tin chi tiết của xe hơi" });
+            }
+        } else if (vehicle.Category === "MOTOR") {
             details = await Motor.findOne({ VehicleID: id });
+            if (!details) {
+                return res
+                    .status(404)
+                    .json({ message: "Không tìm thấy thông tin chi tiết của xe máy" });
+            }
         }
 
-        // Kết hợp dữ liệu và trả về
-        res.status(200).json({
+        // Trả về kết quả
+        return res.status(200).json({
             message: "Lấy thông tin phương tiện thành công",
             vehicle: {
                 ...vehicle.toObject(),
-                details, // Gắn thông tin chi tiết phương tiện
+                details, // Gắn thông tin chi tiết
             },
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 };
+
 
 module.exports = {
     getAllVehicles,
