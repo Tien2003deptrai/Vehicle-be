@@ -8,12 +8,14 @@ const reviewSchema = new mongoose.Schema({
         unique: true,
     },
     CusID: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        // type: String,
         required: true,
         ref: 'Customer', // Tham chiếu đến model Customer
     },
     VehicleID: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        // type: String,
         required: true,
         ref: 'Vehicle', // Tham chiếu đến model Vehicle
     },

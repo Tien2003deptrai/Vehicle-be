@@ -17,7 +17,6 @@ const router = express.Router();
 
 router.get('/users', authenticate, authorize(['ADMIN']), getUsers);
 router.delete('/user/:id', authenticate, authorize(['ADMIN']), deleteUser);
-router.get('/activity/rentals', authenticate, authorize(['ADMIN']), getUserRentals);
 router.get('/activity/payments', authenticate, authorize(['ADMIN']), getUserPayments);
 router.get('/activity/reviews', authenticate, authorize(['ADMIN']), getUserReviews);
 router.delete('/review/:id', authenticate, authorize(['ADMIN']), deleteReview);

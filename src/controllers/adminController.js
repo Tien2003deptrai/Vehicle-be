@@ -59,34 +59,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-const getUserRentals = async (req, res) => {
-    try {
-        if (req.user.Role !== 'ADMIN') {
-            return res.status(403).json({ message: 'Bạn không có quyền truy cập' });
-        }
-
-        const { page = 1, limit = 10 } = req.query;
-        const rentals = await RentalAgreement.find({})
-            .populate('VehicleID CusID ServiceID')
-            .skip((page - 1) * limit)
-            .limit(Number(limit));
-
-        const totalRentals = await RentalAgreement.countDocuments();
-
-        res.status(200).json({
-            rentals,
-            pagination: {
-                total: totalRentals,
-                page: Number(page),
-                pages: Math.ceil(totalRentals / limit),
-            },
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
-
-
 // GET /admin/activity/payments
 const getUserPayments = async (req, res) => {
     try {
@@ -187,11 +159,9 @@ const handleVehicleHireRequest = async (req, res) => {
     }
 };
 
-
 module.exports = {
     getUsers,
     deleteUser,
-    getUserRentals,
     getUserPayments,
     getUserReviews,
     deleteReview,
