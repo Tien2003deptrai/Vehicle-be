@@ -31,7 +31,8 @@ const registerVehicleHireService = async (req, res) => {
 
 const addNewVehicle = async (req, res) => {
     try {
-        const { VehicleID, Category, LicensePlate, PricePerDay, FuelConsumption, Range, EngineCapacity } = req.body;
+        const { Category, LicensePlate, PricePerDay, FuelConsumption, Range, EngineCapacity } = req.body;
+        console.log('UserId', req.user.UserID);
 
         const userService = await VehicleHireService.findOne({ UserID: req.user.UserID });
         if (!userService) {
@@ -43,7 +44,7 @@ const addNewVehicle = async (req, res) => {
         }
 
         const newVehicle = new Vehicle({
-            VehicleID: VehicleID || require('crypto').randomUUID(),
+            VehicleID: require('crypto').randomUUID(),
             UserID: req.user.UserID,
             Category: Category.toUpperCase(),
             LicensePlate,
@@ -64,10 +65,10 @@ const addNewVehicle = async (req, res) => {
 
 const updateVehicle = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { VehicleID } = req.params;
         const updates = req.body;
 
-        const vehicle = await Vehicle.findOne({ _id: id, UserID: req.user.UserID });
+        const vehicle = await Vehicle.findOne({ VehicleID: VehicleID, UserID: req.user.UserID });
         if (!vehicle) {
             return res.status(404).json({ message: 'Không tìm thấy xe hoặc không có quyền chỉnh sửa' });
         }
@@ -80,30 +81,6 @@ const updateVehicle = async (req, res) => {
         await vehicle.save();
 
         res.status(200).json({ message: 'Cập nhật xe thành công', vehicle });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
-
-const confirmPayment = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        if (req.user.Role !== 'ADMIN' && req.user.UserID !== req.body.ServiceID) {
-            return res.status(403).json({ message: 'Bạn không có quyền xác nhận thanh toán' });
-        }
-
-        const updatedBill = await Bill.findOneAndUpdate(
-            { _id: id },
-            { Status: 'COMPLETED' },
-            { new: true }
-        );
-
-        if (!updatedBill) {
-            return res.status(404).json({ message: 'Không tìm thấy hóa đơn' });
-        }
-
-        res.status(200).json({ message: 'Xác nhận thanh toán thành công', bill: updatedBill });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -139,46 +116,10 @@ const getRentalSchedule = async (req, res) => {
     }
 };
 
-const payBill = async (req, res) => {
-    try {
-        const { BillID } = req.body;
-
-        // Lấy thông tin hóa đơn từ BillID
-        const bill = await Bill.findOne({ BillID, CusID: req.user.UserID });
-        if (!bill) {
-            return res.status(404).json({ message: 'Không tìm thấy hóa đơn hoặc bạn không có quyền truy cập' });
-        }
-
-        if (bill.Status === 'COMPLETED') {
-            return res.status(400).json({ message: 'Hóa đơn này đã được thanh toán' });
-        }
-
-        // Cập nhật trạng thái hóa đơn
-        bill.Status = 'COMPLETED';
-        await bill.save();
-
-        // Gửi thông báo xác nhận (tùy chọn)
-        const notification = new Notification({
-            NotificationID: require('crypto').randomUUID(),
-            SenderID: 'SYSTEM',
-            ReceiverID: req.user.UserID,
-            Message: `Hóa đơn ${BillID} đã được thanh toán thành công.`,
-            NotificationDate: new Date(),
-        });
-        await notification.save();
-
-        res.status(200).json({ message: 'Thanh toán thành công', bill });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
-
 module.exports = {
     registerVehicleHireService,
     addNewVehicle,
     updateVehicle,
-    confirmPayment,
     extendRentalContract,
     getRentalSchedule,
-    payBill
 }

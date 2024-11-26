@@ -24,7 +24,7 @@ const billSchema = new mongoose.Schema({
     },
     Payment_img: {
         type: String,
-        required: true
+        // required: true
     }, // Link hoặc đường dẫn đến hình ảnh thanh toán
     Status: {
         type: String,

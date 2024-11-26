@@ -5,6 +5,7 @@ const RentalAgreement = require('../models/RentalAgreement');
 const Review = require('../models/Review');
 const Vehicle = require('../models/Vehicle');
 const VehicleHireService = require('../models/VehicleHireService');
+const { v4: uuidv4 } = require('uuid');
 
 // GET /vehicles/search
 const searchRentalVehicles = async (req, res) => {
@@ -120,30 +121,33 @@ const viewTransactionHistory = async (req, res) => {
     }
 };
 
-const createBill = async (agreementId, customerId) => {
+const createBill = async (req, res) => {
     try {
-        // Lấy thông tin hợp đồng
+        const { agreementId } = req.body;
+
+        const customerId = req.user.UserID;
+
         const agreement = await RentalAgreement.findOne({ AgreementID: agreementId });
         if (!agreement) {
-            throw new Error('Hợp đồng không tồn tại');
+            return res.status(404).json({ message: 'Hợp đồng không tồn tại' });
         }
 
-        // Tạo hóa đơn mới
         const newBill = new Bill({
-            BillID: uuidv4(),
+            BillID: require('crypto').randomUUID(),
             CusID: customerId,
             AgreementID: agreementId,
             Date: new Date(),
-            Payment_img: '', // Để trống ban đầu, cập nhật sau khi thanh toán
+            Payment_img: '',
             Status: 'PENDING',
         });
 
         await newBill.save();
-        console.log(`Hóa đơn cho hợp đồng ${agreementId} đã được tạo.`);
+        res.status(201).json({ message: 'Hóa đơn đã được tạo thành công', newBill });
     } catch (err) {
-        console.error('Error creating bill:', err.message);
+        res.status(500).json({ message: err.message });
     }
 };
+
 
 const payBill = async (req, res) => {
     try {
